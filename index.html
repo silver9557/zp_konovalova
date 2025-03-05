@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор зарплаты</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #2b2b2b, #1e1e1e);
+            color: #e0e0e0;
+            padding: 20px;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            transition: background 0.5s ease;
+        }
+
+        .container {
+            background: #333;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            max-width: 450px;
+            width: 100%;
+            transition: all 0.5s ease;
+        }
+
+        h1 {
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            color: #ddd;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: color 0.3s ease;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #ccc;
+            transition: color 0.3s ease;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #555;
+            background: #424242;
+            color: #e0e0e0;
+            font-size: 14px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        input:hover, select:hover {
+            background: #525252;
+            border-color: #777;
+            transform: scale(1.02);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4a90e2;
+            background: #525252;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 10px;
+        }
+
+        button {
+            background: #4a90e2;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        button:hover {
+            background: #357abd;
+            transform: scale(1.05);
+        }
+
+        button:active {
+            transform: scale(0.98);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #3a3a3a;
+            border-radius: 6px;
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        #result.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bonus-section {
+            background: #2e7d32;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            transition: background 0.3s ease;
+        }
+
+        .result-item {
+            margin: 8px 0;
+            padding: 5px 10px;
+            font-size: 14px;
+            opacity: 0;
+            animation: slideIn 0.5s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .total-bonus {
+            font-weight: bold;
+            color: #e0e0e0;
+            border-top: 1px solid #666;
+            padding-top: 5px;
+        }
+
+        .final-salary {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            background: #4a90e2;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 15px;
+            text-align: center;
+            transition: background 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Калькулятор зарплаты</h1>
+        <form id="salaryForm">
+            <div class="form-group">
+                <label for="totalSales">Общая выписка (руб):</label>
+                <input type="number" id="totalSales" min="0" title="Введите сумму выписки за месяц" required>
+            </div>
+            <div class="form-group">
+                <label for="personalPlan">Выполнение личного плана (%):</label>
+                <input type="number" id="personalPlan" step="0.1" min="0" title="Процент выполнения личного плана" required>
+            </div>
+            <div class="form-group">
+                <label for="brandPlan">Выполнение плана по брендам (%):</label>
+                <input type="number" id="brandPlan" step="0.1" min="0" title="Процент выполнения плана по брендам" required>
+            </div>
+            <div class="form-group">
+                <label for="callPlan">Выполнение плана по звонкам (%):</label>
+                <input type="number" id="callPlan" step="0.1" min="0" title="Процент выполнения плана по звонкам" required>
+            </div>
+            <div class="form-group">
+                <label for="mysteryShopper">Тайный покупатель (%):</label>
+                <input type="number" id="mysteryShopper" step="0.1" min="0" title="Оценка тайного покупателя в процентах" required>
+            </div>
+            <div class="form-group">
+                <label for="holidayDays">Отработано праздничных дней:</label>
+                <input type="number" id="holidayDays" min="0" title="Количество отработанных праздничных дней" required>
+            </div>
+            <div class="form-group">
+                <label for="categoryBonus">Доплата за категорию (руб):</label>
+                <input type="number" id="categoryBonus" min="0" title="Сумма доплаты за категорию" required>
+            </div>
+            <div class="form-group">
+                <label for="month">Месяц расчета:</label>
+                <select id="month" required>
+                    <option value="136">Январь (136 ч)</option>
+                    <option value="160">Февраль (160 ч)</option>
+                    <option value="167">Март (167 ч)</option>
+                    <option value="175">Апрель (175 ч)</option>
+                    <option value="144">Май (144 ч)</option>
+                    <option value="151">Июнь (151 ч)</option>
+                    <option value="184">Июль (184 ч)</option>
+                    <option value="168">Август (168 ч)</option>
+                    <option value="176">Сентябрь (176 ч)</option>
+                    <option value="184">Октябрь (184 ч)</option>
+                    <option value="151">Ноябрь (151 ч)</option>
+                    <option value="176">Декабрь (176 ч)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="workedHours">Отработано часов в месяце:</label>
+                <input type="number" id="workedHours" min="0" title="Общее количество отработанных часов" required>
+            </div>
+            <div class="form-group">
+                <label for="managerCoef">Есть коэффициент руководителя (1.1)?</label>
+                <input type="checkbox" id="managerCoef" title="Увеличивает премию на 10%">
+            </div>
+            <button type="submit">Рассчитать зарплату</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const monthHoursMap = {
+            0: '136', 1: '160', 2: '167', 3: '175', 4: '144', 5: '151',
+            6: '184', 7: '168', 8: '176', 9: '184', 10: '151', 11: '176'
+        };
+
+        const currentMonth = new Date().getMonth();
+        document.getElementById('month').value = monthHoursMap[currentMonth];
+
+        document.querySelectorAll('.form-group').forEach((group, index) => {
+            group.style.animationDelay = `${index * 0.1}s`;
+        });
+
+        document.getElementById('salaryForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateSalary();
+        });
+
+        function getCoef(percentage) {
+            if (percentage < 80) return 0;
+            if (percentage < 85) return 0.6;
+            if (percentage < 90) return 0.7;
+            if (percentage < 95) return 0.8;
+            if (percentage < 100) return 0.9;
+            if (percentage <= 115) return percentage / 100;
+            return 1.15;
+        }
+
+        function getCallCoef(percentage) {
+            if (percentage < 80) return 0;
+            if (percentage < 85) return 0.6;
+            if (percentage < 90) return 0.7;
+            if (percentage < 95) return 0.8;
+            if (percentage < 100) return 0.9;
+            if (percentage <= 100) return 1;
+            return 1.1;
+        }
+
+        function getMysteryCoef(percentage) {
+            if (percentage < 60) return 0;
+            if (percentage < 70) return 0.8;
+            if (percentage < 90) return 0.9;
+            if (percentage <= 100) return 1;
+            return 1.1;
+        }
+
+        function calculateSalary() {
+            const salary = 40000;
+            const totalSales = Number(document.getElementById('totalSales').value);
+            const personalPlan = Number(document.getElementById('personalPlan').value);
+            const brandPlan = Number(document.getElementById('brandPlan').value);
+            const callPlan = Number(document.getElementById('callPlan').value);
+            const mysteryShopper = Number(document.getElementById('mysteryShopper').value);
+            const holidayDays = Number(document.getElementById('holidayDays').value);
+            const categoryBonus = Number(document.getElementById('categoryBonus').value);
+            const monthHours = Number(document.getElementById('month').value);
+            const workedHours = Number(document.getElementById('workedHours').value);
+            const hasManagerCoef = document.getElementById('managerCoef').checked;
+
+            // Базовая валидация
+            if (isNaN(totalSales) || totalSales < 0 || workedHours > 744 || workedHours < 0) {
+                alert("Пожалуйста, введите корректные значения (выписка ≥ 0, часы ≤ 744).");
+                return;
+            }
+
+            const bonusPart = totalSales > 1200000 ? totalSales * 0.0208 : 25000;
+            const turnoverBonus = bonusPart * 0.35 * getCoef(personalPlan);
+            const brandBonus = bonusPart * 0.20 * getCoef(brandPlan);
+            const callBonus = bonusPart * 0.35 * getCallCoef(callPlan);
+            const mysteryBonus = bonusPart * 0.10 * getMysteryCoef(mysteryShopper);
+            let totalBonus = turnoverBonus + brandBonus + callBonus + mysteryBonus;
+            if (hasManagerCoef) totalBonus *= 1.1;
+
+            const hourCost = salary / monthHours;
+            let hoursAdjustment = 0;
+            if (workedHours < monthHours) {
+                hoursAdjustment = (monthHours - workedHours) * hourCost * -1;
+            }
+
+            let overtimeDoublePay = 0;
+            if (workedHours > monthHours) {
+                overtimeDoublePay = (workedHours - monthHours) * hourCost * 2;
+            }
+
+            const holidayPay = holidayDays * (salary / monthHours * 11 * 2);
+            const totalSalary = salary + totalBonus + hoursAdjustment + holidayPay + categoryBonus + overtimeDoublePay;
+
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <div class="result-item">Оклад: ${salary.toFixed(2)} руб</div>
+                <div class="bonus-section">
+                    <div class="result-item">Премия по товарообороту: ${turnoverBonus.toFixed(2)} руб</div>
+                    <div class="result-item">Премия по брендам: ${brandBonus.toFixed(2)} руб</div>
+                    <div class="result-item">Премия по звонкам: ${callBonus.toFixed(2)} руб</div>
+                    <div class="result-item">Премия по тайному покупателю: ${mysteryBonus.toFixed(2)} руб</div>
+                    ${hasManagerCoef ? '<div class="result-item">Коэффициент руководителя: x1.1</div>' : ''}
+                    <div class="result-item total-bonus">Общая премия: ${totalBonus.toFixed(2)} руб</div>
+                </div>
+                <div class="result-item">Доплата за праздничные дни: ${holidayPay.toFixed(2)} руб</div>
+                <div class="result-item">Доплата за категорию: ${categoryBonus.toFixed(2)} руб</div>
+                <div class="result-item">${hoursAdjustment < 0 ? 'Штраф за недоработку часов' : 'Переработка'}: ${hoursAdjustment.toFixed(2)} руб</div>
+                <div class="result-item">Оплата переработок в двойном размере: ${overtimeDoublePay.toFixed(2)} руб</div>
+                <div class="final-salary">Итого зарплата: ${totalSalary.toFixed(2)} руб</div>
+            `;
+
+            resultDiv.classList.remove('show');
+            setTimeout(() => {
+                resultDiv.classList.add('show');
+                resultDiv.querySelectorAll('.result-item').forEach((item, index) => {
+                    item.style.animationDelay = `${index * 0.1}s`;
+                });
+            }, 10);
+        }
+    </script>
+</body>
+</html>
