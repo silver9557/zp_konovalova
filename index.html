@@ -199,8 +199,8 @@
                 <input type="number" id="callPlan" step="0.1" min="0" title="Процент выполнения плана по звонкам" required>
             </div>
             <div class="form-group">
-                <label for="mysteryShopper">Тайный покупатель (%):</label>
-                <input type="number" id="mysteryShopper" step="0.1" min="0" title="Оценка тайного покупателя в процентах" required>
+                <label for="callRating">Оценка звонков (%):</label>
+                <input type="number" id="callRating" step="0.1" min="0" title="Оценка качества звонков в процентах" required>
             </div>
             <div class="form-group">
                 <label for="holidayDays">Отработано праздничных дней:</label>
@@ -278,12 +278,11 @@
             return 1.1;
         }
 
-        function getMysteryCoef(percentage) {
+        function getCallRatingCoef(percentage) {
             if (percentage < 60) return 0;
-            if (percentage < 70) return 0.8;
-            if (percentage < 90) return 0.9;
-            if (percentage <= 100) return 1;
-            return 1.1;
+            if (percentage < 70) return 0.5;
+            if (percentage < 90) return 0.8;
+            return 1;
         }
 
         function calculateSalary() {
@@ -292,7 +291,7 @@
             const personalPlan = Number(document.getElementById('personalPlan').value);
             const brandPlan = Number(document.getElementById('brandPlan').value);
             const callPlan = Number(document.getElementById('callPlan').value);
-            const mysteryShopper = Number(document.getElementById('mysteryShopper').value);
+            const callRating = Number(document.getElementById('callRating').value);
             const holidayDays = Number(document.getElementById('holidayDays').value);
             const categoryBonus = Number(document.getElementById('categoryBonus').value);
             const monthHours = Number(document.getElementById('month').value);
@@ -309,8 +308,8 @@
             const turnoverBonus = bonusPart * 0.35 * getCoef(personalPlan);
             const brandBonus = bonusPart * 0.20 * getCoef(brandPlan);
             const callBonus = bonusPart * 0.35 * getCallCoef(callPlan);
-            const mysteryBonus = bonusPart * 0.10 * getMysteryCoef(mysteryShopper);
-            let totalBonus = turnoverBonus + brandBonus + callBonus + mysteryBonus;
+            const callRatingBonus = bonusPart * 0.10 * getCallRatingCoef(callRating);
+            let totalBonus = turnoverBonus + brandBonus + callBonus + callRatingBonus;
             if (hasManagerCoef) totalBonus *= 1.1;
 
             const hourCost = salary / monthHours;
@@ -334,7 +333,7 @@
                     <div class="result-item">Премия по товарообороту: ${turnoverBonus.toFixed(2)} руб</div>
                     <div class="result-item">Премия по брендам: ${brandBonus.toFixed(2)} руб</div>
                     <div class="result-item">Премия по звонкам: ${callBonus.toFixed(2)} руб</div>
-                    <div class="result-item">Премия по тайному покупателю: ${mysteryBonus.toFixed(2)} руб</div>
+                    <div class="result-item">Премия по оценке звонков: ${callRatingBonus.toFixed(2)} руб</div>
                     ${hasManagerCoef ? '<div class="result-item">Коэффициент руководителя: x1.1</div>' : ''}
                     <div class="result-item total-bonus">Общая премия: ${totalBonus.toFixed(2)} руб</div>
                 </div>
