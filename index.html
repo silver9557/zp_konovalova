@@ -378,7 +378,7 @@
                 overtimeDoublePay = (workedHours - monthHours) * hourCost * 2;
             }
 
-            const holidayPay = holidayDays * (salary / monthHours * 11 * 2);
+            const holidayPay = holidayDays * (salary / monthHours * 11);
             const totalSalary = salary + totalBonus + hoursAdjustment + holidayPay + categoryBonus + overtimeDoublePay;
 
             const resultDiv = document.getElementById('result');
@@ -392,7 +392,7 @@
                     ${hasManagerCoef ? '<div class="result-item">Коэффициент руководителя: x1.1</div>' : ''}
                     <div class="result-item total-bonus">Общая премия: ${totalBonus.toFixed(2)} руб</div>
                 </div>
-                <div class="result-item">Доплата за праздничные дни: ${holidayPay.toFixed(2)} руб</div>
+                <div class="result-item">Доплата за праздничные дни (может быть неточной): ${holidayPay.toFixed(2)} руб</div>
                 <div class="result-item">Доплата за категорию: ${categoryBonus.toFixed(2)} руб</div>
                 <div class="result-item">${hoursAdjustment < 0 ? 'Штраф за недоработку часов' : 'Переработка'}: ${hoursAdjustment.toFixed(2)} руб</div>
                 <div class="result-item">Оплата переработок в двойном размере: ${overtimeDoublePay.toFixed(2)} руб</div>
