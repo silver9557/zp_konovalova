@@ -221,6 +221,34 @@
 			transform: scale(0.98);
 			box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 		}
+
+        #resetButton { /* Использован ID селектор # вместо класса . */
+        background-color: #f44336 !important; /* Красный цвет фона */
+        color: white; /* Белый цвет текста */
+        border: none; /* Убираем границу */
+        padding: 12px 20px; /* Отступы, как у кнопки "Рассчитать" */
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin-top: 20px; /* Отступ сверху, как у кнопки "Рассчитать" */
+        cursor: pointer;
+        border-radius: 6px; /* Закругление углов, как у кнопки "Рассчитать" */
+        width: 100%; /* Ширина, как у кнопки "Рассчитать" */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Тень, как у кнопки "Рассчитать" */
+        transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease; /* Анимация, как у кнопки "Рассчитать" */
+    }
+
+    #resetButton:hover { /* Использован ID селектор # вместо класса . */
+        background-color: #d32f2f; /* Более темный красный при наведении */
+        transform: scale(1.05); /* Эффект масштабирования при наведении, как у кнопки "Рассчитать" */
+        box-shadow: 0 4px 7px rgba(0, 0, 0, 0.3); /* Тень при наведении */
+    }
+
+    #resetButton:active { /* Использован ID селектор # вместо класса . */
+        transform: scale(0.98); /* Эффект нажатия, как у кнопки "Рассчитать" */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2); /* Тень при нажатии */
+    }
     </style>
 </head>
 <body>
@@ -285,128 +313,207 @@
                 <label for="managerCoef">Есть коэффициент руководителя (1.1)?</label>
                 <input type="checkbox" id="managerCoef" title="Увеличивает премию на 10%">
             </div>
+            <div class="form-group button-group">
+            <button type="button" id="resetButton">Сброс</button>
+            </div>
             <button type="submit">Рассчитать зарплату</button>
         </form>
         <div id="result"></div>
     </div>
 </body>	
 
-    <script>
-        const monthHoursMap = {
-            0: '136', 1: '160', 2: '167', 3: '175', 4: '144', 5: '151',
-            6: '184', 7: '168', 8: '176', 9: '184', 10: '151', 11: '176'
-        };
+<script>
+    const monthHoursMap = {
+        0: '136', 1: '160', 2: '167', 3: '175', 4: '144', 5: '151',
+        6: '184', 7: '168', 8: '176', 9: '184', 10: '151', 11: '176'
+    };
 
-        const currentMonth = new Date().getMonth();
-        document.getElementById('month').value = monthHoursMap[currentMonth];
+    const currentMonth = new Date().getMonth();
+    document.getElementById('month').value = monthHoursMap[currentMonth];
 
-        document.querySelectorAll('.form-group').forEach((group, index) => {
-            group.style.animationDelay = `${index * 0.1}s`;
-        });
+    document.querySelectorAll('.form-group').forEach((group, index) => {
+        group.style.animationDelay = `${index * 0.1}s`;
+    });
 
-        document.getElementById('salaryForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            calculateSalary();
-        });
+    document.addEventListener('DOMContentLoaded', function() {
+        loadFormData(); // Загрузка данных при загрузке страницы
 
-        function getCoef(percentage) {
-            if (percentage < 80) return 0;
-            if (percentage < 85) return 0.6;
-            if (percentage < 90) return 0.7;
-            if (percentage < 95) return 0.8;
-            if (percentage < 100) return 0.9;
-            if (percentage <= 115) return percentage / 100;
-            return 1.15;
-        }
-
-        function getCallCoef(percentage) {
-            if (percentage < 80) return 0;
-            if (percentage < 85) return 0.6;
-            if (percentage < 90) return 0.7;
-            if (percentage < 95) return 0.8;
-            if (percentage < 100) return 0.9;
-            if (percentage <= 100) return 1;
-            return 1.1;
-        }
-
-        function getCallRatingCoef(percentage) {
-            if (percentage < 60) return 0;
-            if (percentage < 70) return 0.5;
-            if (percentage < 90) return 0.8;
-            return 1;
-        }
-
-        function calculateSalary() {
-            const salary = 40000;
-            const totalSales = Number(document.getElementById('totalSales').value);
-            const personalPlan = Number(document.getElementById('personalPlan').value);
-            const brandPlan = Number(document.getElementById('brandPlan').value);
-            const callPlan = Number(document.getElementById('callPlan').value);
-            const callRating = Number(document.getElementById('callRating').value);
-            const holidayDays = Number(document.getElementById('holidayDays').value);
-            const categoryBonus = Number(document.getElementById('categoryBonus').value);
-            const monthHours = Number(document.getElementById('month').value);
-            const workedHours = Number(document.getElementById('workedHours').value);
-            const hasManagerCoef = document.getElementById('managerCoef').checked;
-
-            // Базовая валидация
-            if (isNaN(totalSales) || totalSales < 0 || workedHours > 744 || workedHours < 0) {
-                alert("Пожалуйста, введите корректные значения (выписка ≥ 0, часы ≤ 744).");
-                return;
+        const formElements = document.getElementById('salaryForm').elements;
+        for (let element of formElements) {
+            if (element.type !== 'button') {
+                element.addEventListener('input', saveFormData); // Сохранение при каждом изменении ввода
             }
-
-            const bonusPart = totalSales > 1200000 ? totalSales * 0.0208 : 25000;
-            const turnoverBonus = bonusPart * 0.35 * getCoef(personalPlan);
-            const brandBonus = bonusPart * 0.20 * getCoef(brandPlan);
-            const callBonus = bonusPart * 0.35 * getCallCoef(callPlan);
-            const callRatingBonus = bonusPart * 0.10 * getCallRatingCoef(callRating);
-            let totalBonus = turnoverBonus + brandBonus + callBonus + callRatingBonus;
-            if (hasManagerCoef) totalBonus *= 1.1;
-
-            const hourCost = salary / monthHours;
-            let hoursAdjustment = 0;
-            if (workedHours < monthHours) {
-                hoursAdjustment = (monthHours - workedHours) * hourCost * -1;
-            }
-			if (workedHours < 0) {
-			alert("Отработанные часы не могут быть отрицательными.");
-			return;
-			}
-
-            let overtimeDoublePay = 0;
-            if (workedHours > monthHours) {
-                overtimeDoublePay = (workedHours - monthHours) * hourCost * 2;
-            }
-
-            const holidayPay = holidayDays * (salary / monthHours * 11);
-            const totalSalary = salary + totalBonus + hoursAdjustment + holidayPay + categoryBonus + overtimeDoublePay;
-
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = `
-                <div class="result-item">Оклад: ${salary.toFixed(2)} руб</div>
-                <div class="bonus-section">
-                    <div class="result-item">Премия по товарообороту: ${turnoverBonus.toFixed(2)} руб</div>
-                    <div class="result-item">Премия по брендам: ${brandBonus.toFixed(2)} руб</div>
-                    <div class="result-item">Премия по звонкам: ${callBonus.toFixed(2)} руб</div>
-                    <div class="result-item">Премия по оценке звонков: ${callRatingBonus.toFixed(2)} руб</div>
-                    ${hasManagerCoef ? '<div class="result-item">Коэффициент руководителя: x1.1</div>' : ''}
-                    <div class="result-item total-bonus">Общая премия: ${totalBonus.toFixed(2)} руб</div>
-                </div>
-                <div class="result-item">Доплата за праздничные дни (может быть неточной): ${holidayPay.toFixed(2)} руб</div>
-                <div class="result-item">Доплата за категорию: ${categoryBonus.toFixed(2)} руб</div>
-                <div class="result-item">${hoursAdjustment < 0 ? 'Штраф за недоработку часов' : 'Переработка'}: ${hoursAdjustment.toFixed(2)} руб</div>
-                <div class="result-item">Оплата переработок в двойном размере: ${overtimeDoublePay.toFixed(2)} руб</div>
-                <div class="final-salary">Итого зарплата: ${totalSalary.toFixed(2)} руб</div>
-            `;
-
-            resultDiv.classList.remove('show');
-            setTimeout(() => {
-                resultDiv.classList.add('show');
-                resultDiv.querySelectorAll('.result-item').forEach((item, index) => {
-                    item.style.animationDelay = `${index * 0.1}s`;
-                });
-            }, 10);
         }
-    </script>
+    });
+
+    function saveFormData() {
+        const formElements = document.getElementById('salaryForm').elements;
+        for (let element of formElements) {
+            if (element.type !== 'button' && element.id) {
+                localStorage.setItem(element.id, element.value);
+            }
+        }
+    }
+
+    function loadFormData() {
+        const formElements = document.getElementById('salaryForm').elements;
+        for (let element of formElements) {
+            if (element.type !== 'button' && element.id) {
+                const savedValue = localStorage.getItem(element.id);
+                if (savedValue) {
+                    element.value = savedValue;
+                }
+                 if (element.type === 'checkbox' && savedValue === 'true') {
+                    element.checked = true;
+                } else if (element.type === 'checkbox' && savedValue === 'false'){
+                     element.checked = false;
+                } else if (element.type !== 'checkbox' && savedValue) {
+                    element.value = savedValue;
+                }
+            }
+        }
+    }
+    document.getElementById('resetButton').addEventListener('click', function() {
+        clearFormData(); // Вызов функции для очистки формы и localStorage
+    });
+
+    function clearFormData() {
+        const formElements = document.getElementById('salaryForm').elements;
+        for (let element of formElements) {
+            if (element.type !== 'button' && element.id) {
+                element.value = ''; // Очищаем значение поля ввода
+                if (element.type === 'checkbox') {
+                    element.checked = false; // Снимаем галочку с чекбоксов
+                }
+                localStorage.removeItem(element.id); // Удаляем данные из localStorage для этого поля
+            }
+        }
+        document.getElementById('result').classList.remove('show'); // Скрываем блок результатов, если он был показан
+    }
+
+    document.getElementById('salaryForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        calculateSalary();
+    });
+
+    /**
+     * Рассчитывает коэффициент премии в зависимости от процента выполнения плана.
+     * @param {number} percentage Процент выполнения плана.
+     * @returns {number} Коэффициент премии.
+     */
+    function getCoef(percentage) {
+        if (percentage < 80) return 0;
+        if (percentage < 85) return 0.6;
+        if (percentage < 90) return 0.7;
+        if (percentage < 95) return 0.8;
+        if (percentage < 100) return 0.9;
+        if (percentage <= 115) return percentage / 100;
+        return 1.15;
+    }
+
+    /**
+     * Рассчитывает коэффициент премии по плану звонков.
+     * @param {number} percentage Процент выполнения плана по звонкам.
+     * @returns {number} Коэффициент премии по звонкам.
+     */
+    function getCallCoef(percentage) {
+        if (percentage < 80) return 0;
+        if (percentage < 85) return 0.6;
+        if (percentage < 90) return 0.7;
+        if (percentage < 95) return 0.8;
+        if (percentage < 100) return 0.9;
+        if (percentage <= 100) return 1;
+        return 1.1;
+    }
+
+    /**
+     * Рассчитывает коэффициент премии по оценке качества звонков.
+     * @param {number} percentage Оценка качества звонков в процентах.
+     * @returns {number} Коэффициент премии по оценке звонков.
+     */
+    function getCallRatingCoef(percentage) {
+        if (percentage < 60) return 0;
+        if (percentage < 70) return 0.5;
+        if (percentage < 90) return 0.8;
+        return 1;
+    }
+
+    /**
+     * Рассчитывает общую зарплату на основе введенных данных.
+     */
+    function calculateSalary() {
+        const salary = 40000;
+        const totalSales = Number(document.getElementById('totalSales').value); // Разделители больше не удаляются
+        const personalPlan = Number(document.getElementById('personalPlan').value);
+        const brandPlan = Number(document.getElementById('brandPlan').value);
+        const callPlan = Number(document.getElementById('callPlan').value);
+        const callRating = Number(document.getElementById('callRating').value);
+        const holidayDays = Number(document.getElementById('holidayDays').value);
+        const categoryBonus = Number(document.getElementById('categoryBonus').value);
+        const monthHours = Number(document.getElementById('month').value);
+        const workedHours = Number(document.getElementById('workedHours').value);
+        const hasManagerCoef = document.getElementById('managerCoef').checked;
+
+        // Базовая валидация
+        if (isNaN(totalSales) || totalSales < 0 || workedHours > 744 || workedHours < 0) {
+            alert("Пожалуйста, введите корректные значения (выписка ≥ 0, часы ≤ 744).");
+            return;
+        }
+        if (workedHours < 0) {
+            alert("Отработанные часы не могут быть отрицательными.");
+            return;
+        }
+
+
+        const bonusPart = totalSales > 1200000 ? totalSales * 0.0208 : 25000;
+        const turnoverBonus = bonusPart * 0.35 * getCoef(personalPlan);
+        const brandBonus = bonusPart * 0.20 * getCoef(brandPlan);
+        const callBonus = bonusPart * 0.35 * getCallCoef(callPlan);
+        const callRatingBonus = bonusPart * 0.10 * getCallRatingCoef(callRating);
+        let totalBonus = turnoverBonus + brandBonus + callBonus + callRatingBonus;
+        if (hasManagerCoef) totalBonus *= 1.1;
+
+        const hourCost = salary / monthHours;
+        let hoursAdjustment = 0;
+        if (workedHours < monthHours) {
+            hoursAdjustment = (monthHours - workedHours) * hourCost * -1;
+        }
+
+
+        let overtimeDoublePay = 0;
+        if (workedHours > monthHours) {
+            overtimeDoublePay = (workedHours - monthHours) * hourCost * 2;
+        }
+
+        const holidayPay = holidayDays * (salary / monthHours * 11);
+        const totalSalary = salary + totalBonus + hoursAdjustment + holidayPay + categoryBonus + overtimeDoublePay;
+
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = `
+            <div class="result-item">Оклад: ${salary.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+            <div class="bonus-section">
+                <div class="result-item">Премия по товарообороту: ${turnoverBonus.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+                <div class="result-item">Премия по брендам: ${brandBonus.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+                <div class="result-item">Премия по звонкам: ${callBonus.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+                <div class="result-item">Премия по оценке звонков: ${callRatingBonus.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+                ${hasManagerCoef ? '<div class="result-item">Коэффициент руководителя: x1.1</div>' : ''}
+                <div class="result-item total-bonus">Общая премия: ${totalBonus.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+            </div>
+            <div class="result-item">Доплата за праздничные дни (может быть неточной): ${holidayPay.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+            <div class="result-item">Доплата за категорию: ${categoryBonus.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+            <div class="result-item">${hoursAdjustment < 0 ? 'Штраф за недоработку часов' : 'Переработка'}: ${hoursAdjustment.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+            <div class="result-item">Оплата переработок в двойном размере: ${overtimeDoublePay.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+            <div class="final-salary">Итого зарплата: ${totalSalary.toLocaleString('ru-RU', { style: 'currency', currency: 'RUB' })}</div>
+        `;
+
+        resultDiv.classList.remove('show');
+        setTimeout(() => {
+            resultDiv.classList.add('show');
+            resultDiv.querySelectorAll('.result-item').forEach((item, index) => {
+                item.style.animationDelay = `${index * 0.1}s`;
+            });
+        }, 10);
+    }
+</script>
 </body>
 </html>
